@@ -45,7 +45,7 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
     }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
-    if (ksu_get_manager_uid() == new_uid) {
+    if (ksu_get_manager_appid() == new_uid % PER_USER_RANGE) {
         pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
@@ -80,7 +80,7 @@ int ksu_handle_setuid(uid_t new_uid, uid_t old_uid, uid_t euid) // (new_euid)
         disable_seccomp(current);
         spin_unlock_irq(&current->sighand->siglock);
 
-        if (ksu_get_manager_uid() == new_uid) {
+        if (ksu_get_manager_appid() == new_uid % PER_USER_RANGE) {
             pr_info("install fd for ksu manager(uid=%d)\n", new_uid);
             ksu_install_fd();
         }
