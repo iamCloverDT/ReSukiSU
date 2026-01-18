@@ -1,9 +1,12 @@
 #[allow(clippy::wildcard_imports)]
-use crate::utils::*;
 use crate::{
-    assets, defs, ksucalls, metamodule,
-    restorecon::{restore_syscon, setsyscon},
-    sepolicy,
+    android::{
+        ksucalls, metamodule,
+        restorecon::{restore_syscon, setsyscon},
+        sepolicy,
+        utils::*,
+    },
+    assets, defs,
 };
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
@@ -25,8 +28,11 @@ use std::{
 };
 use zip_extensions::zip_extract_file_to_memory;
 
+use crate::android::{
+    module::ModuleType::{Active, All},
+    module_config,
+};
 use crate::defs::{MODULE_DIR, MODULE_UPDATE_DIR, UPDATE_FILE_NAME};
-use crate::module::ModuleType::{Active, All};
 #[cfg(unix)]
 use std::os::unix::{prelude::PermissionsExt, process::CommandExt};
 
@@ -336,7 +342,7 @@ pub fn prune_modules() -> Result<()> {
         }
 
         // Clear module configs before removing module directory
-        if let Err(e) = crate::module_config::clear_module_configs(module_id) {
+        if let Err(e) = module_config::clear_module_configs(module_id) {
             warn!("Failed to clear configs for {module_id}: {e}");
         }
 
@@ -665,7 +671,7 @@ pub fn read_module_prop(module_path: &Path) -> Result<HashMap<String, String>> {
 
 fn list_module(path: &str) -> Vec<HashMap<String, String>> {
     // Load all module configs once to minimize I/O overhead
-    let all_configs = match crate::module_config::get_all_module_configs() {
+    let all_configs = match module_config::get_all_module_configs() {
         Ok(configs) => configs,
         Err(e) => {
             warn!("Failed to load module configs: {e}");
@@ -736,7 +742,7 @@ fn list_module(path: &str) -> Vec<HashMap<String, String>> {
             let managed_features: Vec<String> = config
                 .iter()
                 .filter_map(|(k, v)| {
-                    if k.starts_with("manage.") && crate::module_config::parse_bool_config(v) {
+                    if k.starts_with("manage.") && module_config::parse_bool_config(v) {
                         k.strip_prefix("manage.")
                             .map(std::string::ToString::to_string)
                     } else {
@@ -779,7 +785,7 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
         };
 
         // Read module config
-        let config = match crate::module_config::merge_configs(module_id) {
+        let config = match module_config::merge_configs(module_id) {
             Ok(c) => c,
             Err(e) => {
                 warn!("Failed to merge configs for module '{module_id}': {e}");
@@ -793,7 +799,7 @@ pub fn get_managed_features() -> Result<HashMap<String, Vec<String>>> {
             if key.starts_with("manage.") {
                 // Parse feature name
                 if let Some(feature_name) = key.strip_prefix("manage.")
-                    && crate::module_config::parse_bool_config(value)
+                    && module_config::parse_bool_config(value)
                 {
                     feature_list.push(feature_name.to_string());
                 }

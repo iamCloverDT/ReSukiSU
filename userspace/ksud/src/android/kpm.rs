@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::{Result, bail};
 
-use crate::ksucalls::ksuctl;
+use crate::android::ksucalls::ksuctl;
 
 const KPM_DIR: &str = "/data/adb/kpm";
 const KPM_LOAD: u64 = 1;
@@ -248,7 +248,7 @@ pub fn booted_load() -> Result<()> {
     check_version()?;
     ensure_dir()?;
 
-    if crate::utils::is_safe_mode() {
+    if crate::android::utils::is_safe_mode() {
         log::warn!("KPM: safe-mode – all modules won't load");
         return Ok(());
     }

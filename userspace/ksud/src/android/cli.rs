@@ -5,11 +5,13 @@ use std::path::PathBuf;
 use android_logger::Config;
 use log::LevelFilter;
 
-use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 #[cfg(all(target_arch = "aarch64", target_os = "android"))]
-use crate::susfs;
+use crate::android::susfs;
+use crate::android::{feature, profile, sepolicy, su};
+use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{
-    apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, umount, utils,
+    android::{debug, init_event, ksucalls, module, module_config, umount, utils},
+    apk_sign, assets, defs,
 };
 
 /// KernelSU userspace cli
@@ -487,7 +489,7 @@ pub fn run() -> Result<()> {
     // the kernel executes su with argv[0] = "su" and replace it with us
     let arg0 = std::env::args().next().unwrap_or_default();
     if arg0 == "su" || arg0 == "/system/bin/su" {
-        return crate::su::root_shell();
+        return su::root_shell();
     }
 
     let cli = Args::parse();
@@ -611,35 +613,33 @@ pub fn run() -> Result<()> {
         Commands::Install { magiskboot } => utils::install(magiskboot),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
-            Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
-            Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
-            Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
+            Sepolicy::Patch { sepolicy } => sepolicy::live_patch(&sepolicy),
+            Sepolicy::Apply { file } => sepolicy::apply_file(file),
+            Sepolicy::Check { sepolicy } => sepolicy::check_rule(&sepolicy),
         },
         Commands::Services => {
             init_event::on_services();
             Ok(())
         }
         Commands::Profile { command } => match command {
-            Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
-            Profile::SetSepolicy { package, policy } => {
-                crate::profile::set_sepolicy(package, policy)
-            }
-            Profile::GetTemplate { id } => crate::profile::get_template(id),
-            Profile::SetTemplate { id, template } => crate::profile::set_template(id, template),
-            Profile::DeleteTemplate { id } => crate::profile::delete_template(id),
-            Profile::ListTemplates => crate::profile::list_templates(),
+            Profile::GetSepolicy { package } => profile::get_sepolicy(package),
+            Profile::SetSepolicy { package, policy } => profile::set_sepolicy(package, policy),
+            Profile::GetTemplate { id } => profile::get_template(id),
+            Profile::SetTemplate { id, template } => profile::set_template(id, template),
+            Profile::DeleteTemplate { id } => profile::delete_template(id),
+            Profile::ListTemplates => profile::list_templates(),
         },
 
         Commands::Feature { command } => match command {
-            Feature::Get { id } => crate::feature::get_feature(&id),
-            Feature::Set { id, value } => crate::feature::set_feature(&id, value),
+            Feature::Get { id } => feature::get_feature(&id),
+            Feature::Set { id, value } => feature::set_feature(&id, value),
             Feature::List => {
-                crate::feature::list_features();
+                feature::list_features();
                 Ok(())
             }
-            Feature::Check { id } => crate::feature::check_feature(&id),
-            Feature::Load => crate::feature::load_config_and_apply(),
-            Feature::Save => crate::feature::save_config(),
+            Feature::Check { id } => feature::check_feature(&id),
+            Feature::Load => feature::load_config_and_apply(),
+            Feature::Save => feature::save_config(),
         },
 
         Commands::Debug { command } => match command {
@@ -653,7 +653,7 @@ pub fn run() -> Result<()> {
                 println!("Kernel Version: {}", ksucalls::get_version());
                 Ok(())
             }
-            Debug::Su { global_mnt } => crate::su::grant_root(global_mnt),
+            Debug::Su { global_mnt } => su::grant_root(global_mnt),
             Debug::Test => assets::ensure_binaries(false),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
@@ -680,8 +680,8 @@ pub fn run() -> Result<()> {
                 return Ok(());
             }
             BootInfo::IsAbDevice => {
-                let val = crate::utils::getprop("ro.build.ab_update")
-                    .unwrap_or_else(|| String::from("false"));
+                let val =
+                    utils::getprop("ro.build.ab_update").unwrap_or_else(|| String::from("false"));
                 let is_ab = val.trim().to_lowercase() == "true";
                 println!("{}", if is_ab { "true" } else { "false" });
                 return Ok(());
@@ -732,21 +732,23 @@ pub fn run() -> Result<()> {
         },
         #[cfg(all(target_arch = "aarch64", target_os = "android"))]
         Commands::Kpm { command } => {
-            use crate::cli::kpm_cmd::Kpm;
+            use kpm_cmd::Kpm;
+
+            use crate::android::kpm;
             match command {
                 Kpm::Load { path, args } => {
-                    crate::kpm::load_module(path.to_str().unwrap(), args.as_deref())
+                    kpm::load_module(path.to_str().unwrap(), args.as_deref())
                 }
-                Kpm::Unload { name } => crate::kpm::unload_module(name),
-                Kpm::Num => crate::kpm::num().map(|_| ()),
-                Kpm::List => crate::kpm::list(),
-                Kpm::Info { name } => crate::kpm::info(name),
+                Kpm::Unload { name } => kpm::unload_module(name),
+                Kpm::Num => kpm::num().map(|_| ()),
+                Kpm::List => kpm::list(),
+                Kpm::Info { name } => kpm::info(name),
                 Kpm::Control { name, args } => {
-                    let ret = crate::kpm::control(name, args)?;
+                    let ret = kpm::control(name, args)?;
                     println!("{ret}");
                     Ok(())
                 }
-                Kpm::Version => crate::kpm::version(),
+                Kpm::Version => kpm::version(),
             }
         }
     };

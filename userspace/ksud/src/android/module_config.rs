@@ -5,8 +5,9 @@ use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
+use crate::android::module;
+use crate::android::utils::ensure_dir_exists;
 use crate::defs;
-use crate::utils::ensure_dir_exists;
 
 #[allow(clippy::unreadable_literal)]
 const MODULE_CONFIG_MAGIC: u32 = 0x4b53554d; // "KSUM"
@@ -116,7 +117,7 @@ fn ensure_config_dir(module_id: &str) -> Result<PathBuf> {
 
 /// Load config from binary file
 pub fn load_config(module_id: &str, config_type: ConfigType) -> Result<HashMap<String, String>> {
-    crate::module::validate_module_id(module_id)?;
+    module::validate_module_id(module_id)?;
 
     let config_path = get_config_path(module_id, config_type);
 
@@ -204,7 +205,7 @@ pub fn save_config(
     config_type: ConfigType,
     config: &HashMap<String, String>,
 ) -> Result<()> {
-    crate::module::validate_module_id(module_id)?;
+    module::validate_module_id(module_id)?;
 
     // Validate config count
     validate_config_count(config)?;
@@ -338,7 +339,7 @@ pub fn clear_config(module_id: &str, config_type: ConfigType) -> Result<()> {
 
 /// Merge persist and temp configs (temp takes priority)
 pub fn merge_configs(module_id: &str) -> Result<HashMap<String, String>> {
-    crate::module::validate_module_id(module_id)?;
+    module::validate_module_id(module_id)?;
 
     let mut merged = match load_config(module_id, ConfigType::Persist) {
         Ok(config) => config,
@@ -447,7 +448,7 @@ pub fn clear_all_temp_configs() -> Result<()> {
 
 /// Clear all configs for a module (called during uninstall)
 pub fn clear_module_configs(module_id: &str) -> Result<()> {
-    crate::module::validate_module_id(module_id)?;
+    module::validate_module_id(module_id)?;
 
     let config_dir = get_config_dir(module_id);
 

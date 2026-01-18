@@ -4,7 +4,7 @@ use std::{
     process::Command,
 };
 
-use crate::ksucalls;
+use crate::android::ksucalls;
 
 const KERNEL_PARAM_PATH: &str = "/sys/module/kernelsu";
 

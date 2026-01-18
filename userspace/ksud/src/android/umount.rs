@@ -1,4 +1,4 @@
-use crate::{defs, ksucalls};
+use crate::{android::ksucalls, defs};
 use anyhow::{Context, Result};
 use log::{info, warn};
 use std::fs;

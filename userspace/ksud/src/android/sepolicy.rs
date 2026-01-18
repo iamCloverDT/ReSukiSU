@@ -10,6 +10,8 @@ use nom::{
     combinator::map,
 };
 
+use crate::android::ksucalls;
+
 type SeObject<'a> = Vec<&'a str>;
 
 fn is_sepolicy_char(c: char) -> bool {
@@ -697,11 +699,11 @@ fn apply_one_rule<'a>(statement: &'a PolicyStatement<'a>, strict: bool) -> Resul
 
     for policy in policies {
         let ffi_policy = FfiPolicy::from(policy);
-        let cmd = crate::ksucalls::SetSepolicyCmd {
+        let cmd = ksucalls::SetSepolicyCmd {
             cmd: 0,
             arg: &raw const ffi_policy as u64,
         };
-        if let Err(e) = crate::ksucalls::set_sepolicy(&cmd) {
+        if let Err(e) = ksucalls::set_sepolicy(&cmd) {
             log::warn!("apply rule {statement:?} failed: {e}");
             if strict {
                 return Err(anyhow::anyhow!("apply rule {:?} failed: {}", statement, e));

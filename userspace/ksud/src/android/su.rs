@@ -1,6 +1,6 @@
 use crate::{
+    android::utils::{self, umask},
     defs,
-    utils::{self, umask},
 };
 use anyhow::{Context, Ok, Result, bail};
 use getopts::Options;
@@ -15,14 +15,14 @@ use std::{
     process::Command,
 };
 
-use crate::ksucalls::get_wrapped_fd;
+use crate::android::ksucalls::get_wrapped_fd;
 use rustix::{
     process::getuid,
     thread::{Gid, Uid, set_thread_res_gid, set_thread_res_uid},
 };
 
 pub fn grant_root(global_mnt: bool) -> Result<()> {
-    crate::ksucalls::grant_root()?;
+    crate::android::ksucalls::grant_root()?;
 
     let mut command = Command::new("sh");
     let command = unsafe {

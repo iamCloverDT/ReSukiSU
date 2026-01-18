@@ -4,9 +4,9 @@ use std::path::Path;
 
 #[cfg(target_os = "android")]
 mod android {
+    use crate::android::utils::ensure_binary;
     use crate::assets::Asset;
     use crate::defs::BINARY_DIR;
-    use crate::utils::ensure_binary;
     use const_format::concatcp;
 
     pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");

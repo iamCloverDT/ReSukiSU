@@ -10,49 +10,19 @@
     clippy::cast_possible_wrap
 )]
 
+#[cfg(target_os = "android")]
+mod android;
 mod apk_sign;
 mod assets;
 mod boot_patch;
-#[cfg(target_os = "android")]
-mod cli;
 #[cfg(not(target_os = "android"))]
 mod cli_non_android;
-#[cfg(target_os = "android")]
-mod debug;
 mod defs;
-#[cfg(target_os = "android")]
-mod feature;
-#[cfg(target_os = "android")]
-mod init_event;
-#[cfg(all(target_arch = "aarch64", target_os = "android"))]
-mod kpm;
-#[cfg(target_os = "android")]
-mod ksucalls;
-#[cfg(target_os = "android")]
-mod metamodule;
-#[cfg(target_os = "android")]
-mod module;
-#[cfg(target_os = "android")]
-mod module_config;
-#[cfg(target_os = "android")]
-mod profile;
-#[cfg(target_os = "android")]
-mod restorecon;
-#[cfg(target_os = "android")]
-mod sepolicy;
-#[cfg(target_os = "android")]
-mod su;
-#[cfg(all(target_arch = "aarch64", target_os = "android"))]
-mod susfs;
-#[cfg(target_os = "android")]
-mod umount;
-#[cfg(target_os = "android")]
-mod utils;
 
 fn main() -> anyhow::Result<()> {
     #[cfg(target_os = "android")]
     {
-        cli::run()
+        android::cli::run()
     }
     #[cfg(not(target_os = "android"))]
     {

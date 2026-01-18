@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 
+use crate::android::{ksucalls, module};
 use crate::defs;
 
 const FEATURE_CONFIG_PATH: &str = concatcp!(defs::WORKING_DIR, ".feature_config");
@@ -125,7 +126,7 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
 }
 
 pub fn save_binary_config(features: &HashMap<u32, u64>) -> Result<()> {
-    crate::utils::ensure_dir_exists(Path::new(defs::WORKING_DIR))?;
+    crate::android::utils::ensure_dir_exists(Path::new(defs::WORKING_DIR))?;
 
     let path = Path::new(FEATURE_CONFIG_PATH);
     let mut file = File::create(path).with_context(|| "Failed to create feature config")?;
@@ -159,7 +160,7 @@ pub fn apply_config(features: &HashMap<u32, u64>) {
 
     let mut applied = 0;
     for (&id, &value) in features {
-        match crate::ksucalls::set_feature(id, value) {
+        match ksucalls::set_feature(id, value) {
             Ok(()) => {
                 if let Some(feature_id) = FeatureId::from_u32(id) {
                     log::info!("Set feature {} to {value}", feature_id.name());
@@ -179,7 +180,7 @@ pub fn apply_config(features: &HashMap<u32, u64>) {
 
 pub fn get_feature(id: &str) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
-    let (value, supported) = crate::ksucalls::get_feature(feature_id as u32)
+    let (value, supported) = ksucalls::get_feature(feature_id as u32)
         .with_context(|| format!("Failed to get feature {id}"))?;
 
     if !supported {
@@ -202,7 +203,7 @@ pub fn set_feature(id: &str, value: u64) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
 
     // Check if this feature is managed by any module
-    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+    if let Ok(managed_features_map) = module::get_managed_features() {
         // Find which modules manage this feature
         let managing_modules: Vec<&String> = managed_features_map
             .iter()
@@ -233,7 +234,7 @@ pub fn set_feature(id: &str, value: u64) -> Result<()> {
         }
     }
 
-    crate::ksucalls::set_feature(feature_id as u32, value)
+    ksucalls::set_feature(feature_id as u32, value)
         .with_context(|| format!("Failed to set feature {id} to {value}"))?;
 
     println!(
@@ -250,7 +251,7 @@ pub fn list_features() {
     println!("{}", "=".repeat(80));
 
     // Get managed features from modules
-    let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
+    let managed_features_map = module::get_managed_features().unwrap_or_default();
 
     // Build a reverse map: feature_name -> Vec<module_id>
     let mut feature_to_modules: HashMap<String, Vec<String>> = HashMap::new();
@@ -272,7 +273,7 @@ pub fn list_features() {
 
     for feature_id in &all_features {
         let id = *feature_id as u32;
-        let (value, supported) = crate::ksucalls::get_feature(id).unwrap_or((0, false));
+        let (value, supported) = ksucalls::get_feature(id).unwrap_or((0, false));
 
         let status = if !supported {
             "NOT_SUPPORTED".to_string()
@@ -334,7 +335,7 @@ pub fn save_config() -> Result<()> {
 
     for feature_id in &all_features {
         let id = *feature_id as u32;
-        if let Ok((value, supported)) = crate::ksucalls::get_feature(id)
+        if let Ok((value, supported)) = ksucalls::get_feature(id)
             && supported
         {
             features.insert(id, value);
@@ -354,7 +355,7 @@ pub fn check_feature(id: &str) -> Result<()> {
     let feature_id = parse_feature_id(id)?;
 
     // Check if this feature is managed by any module
-    let managed_features_map = crate::module::get_managed_features().unwrap_or_default();
+    let managed_features_map = module::get_managed_features().unwrap_or_default();
     let is_managed = managed_features_map
         .values()
         .any(|features| features.iter().any(|f| f == feature_id.name()));
@@ -365,7 +366,7 @@ pub fn check_feature(id: &str) -> Result<()> {
     }
 
     // Check if the feature is supported by kernel
-    let (_value, supported) = crate::ksucalls::get_feature(feature_id as u32)
+    let (_value, supported) = ksucalls::get_feature(feature_id as u32)
         .with_context(|| format!("Failed to get feature {id}"))?;
 
     if supported {
@@ -383,7 +384,7 @@ pub fn init_features() -> Result<()> {
     let mut features = load_binary_config()?;
 
     // Get managed features from active modules and skip them during init
-    if let Ok(managed_features_map) = crate::module::get_managed_features() {
+    if let Ok(managed_features_map) = module::get_managed_features() {
         if !managed_features_map.is_empty() {
             log::info!(
                 "Found {} modules managing features",

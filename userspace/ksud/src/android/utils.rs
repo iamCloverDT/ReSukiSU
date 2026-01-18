@@ -9,7 +9,10 @@ use std::{
     process::Command,
 };
 
-use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
+use crate::{
+    android::{ksucalls, module, restorecon},
+    assets, boot_patch, defs,
+};
 #[allow(unused_imports)]
 use std::fs::{Permissions, set_permissions};
 #[cfg(unix)]

@@ -1,10 +1,13 @@
 #[cfg(all(target_arch = "aarch64", target_os = "android"))]
-use crate::kpm;
-use crate::module::{handle_updated_modules, prune_modules};
-use crate::utils::is_safe_mode;
+use crate::android::kpm;
 use crate::{
-    assets, defs, ksucalls, metamodule, restorecon,
-    utils::{self},
+    android::{
+        ksucalls, metamodule,
+        module::{self, handle_updated_modules, prune_modules},
+        restorecon,
+        utils::{self, is_safe_mode},
+    },
+    assets, defs,
 };
 use anyhow::{Context, Result};
 use log::{info, warn};
@@ -16,7 +19,7 @@ pub fn on_post_data_fs() -> Result<()> {
     utils::umask(0);
 
     // Clear all temporary module configs early
-    if let Err(e) = crate::module_config::clear_all_temp_configs() {
+    if let Err(e) = crate::android::module_config::clear_all_temp_configs() {
         warn!("clear temp configs failed: {e}");
     }
 
@@ -30,7 +33,7 @@ pub fn on_post_data_fs() -> Result<()> {
         return Ok(());
     }
 
-    let safe_mode = crate::utils::is_safe_mode();
+    let safe_mode = crate::android::utils::is_safe_mode();
 
     if safe_mode {
         // we should still ensure module directory exists in safe mode
@@ -38,7 +41,7 @@ pub fn on_post_data_fs() -> Result<()> {
         warn!("safe mode, skip common post-fs-data.d scripts");
     } else {
         // Then exec common post-fs-data scripts
-        if let Err(e) = crate::module::exec_common_scripts("post-fs-data.d", true) {
+        if let Err(e) = crate::android::module::exec_common_scripts("post-fs-data.d", true) {
             warn!("exec common post-fs-data scripts failed: {e}");
         }
     }
@@ -50,7 +53,7 @@ pub fn on_post_data_fs() -> Result<()> {
     // if we are in safe mode, we should disable all modules
     if safe_mode {
         warn!("safe mode, skip post-fs-data scripts and disable all modules!");
-        if let Err(e) = crate::module::disable_all_modules() {
+        if let Err(e) = module::disable_all_modules() {
             warn!("disable all modules failed: {e}");
         }
         return Ok(());
@@ -69,18 +72,18 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // load sepolicy.rule
-    if crate::module::load_sepolicy_rule().is_err() {
+    if crate::android::module::load_sepolicy_rule().is_err() {
         warn!("load sepolicy.rule failed");
     }
 
-    if let Err(e) = crate::profile::apply_sepolies() {
+    if let Err(e) = crate::android::profile::apply_sepolies() {
         warn!("apply root profile sepolicy failed: {e}");
     }
 
     // load feature config
     if is_safe_mode() {
         warn!("safe mode, skip load feature config");
-    } else if let Err(e) = crate::feature::init_features() {
+    } else if let Err(e) = crate::android::feature::init_features() {
         warn!("init features failed: {e}");
     }
 
@@ -96,12 +99,12 @@ pub fn on_post_data_fs() -> Result<()> {
 
     // exec modules post-fs-data scripts
     // TODO: Add timeout
-    if let Err(e) = crate::module::exec_stage_script("post-fs-data", true) {
+    if let Err(e) = module::exec_stage_script("post-fs-data", true) {
         warn!("exec post-fs-data scripts failed: {e}");
     }
 
     // load system.prop
-    if let Err(e) = crate::module::load_system_prop() {
+    if let Err(e) = module::load_system_prop() {
         warn!("load system.prop failed: {e}");
     }
 
@@ -111,7 +114,7 @@ pub fn on_post_data_fs() -> Result<()> {
     }
 
     // Load umount config and apply to kernel
-    if let Err(e) = crate::umount::load_umount_config() {
+    if let Err(e) = crate::android::umount::load_umount_config() {
         warn!("load umount config failed: {e}");
     }
 
@@ -130,12 +133,12 @@ fn run_stage(stage: &str, block: bool) {
         return;
     }
 
-    if crate::utils::is_safe_mode() {
+    if is_safe_mode() {
         warn!("safe mode, skip {stage} scripts");
         return;
     }
 
-    if let Err(e) = crate::module::exec_common_scripts(&format!("{stage}.d"), block) {
+    if let Err(e) = module::exec_common_scripts(&format!("{stage}.d"), block) {
         warn!("Failed to exec common {stage} scripts: {e}");
     }
 
@@ -145,7 +148,7 @@ fn run_stage(stage: &str, block: bool) {
     }
 
     // execute regular modules stage scripts
-    if let Err(e) = crate::module::exec_stage_script(stage, block) {
+    if let Err(e) = module::exec_stage_script(stage, block) {
         warn!("Failed to exec {stage} scripts: {e}");
     }
 }

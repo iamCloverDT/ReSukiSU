@@ -12,7 +12,7 @@ use std::{
     process::Command,
 };
 
-use crate::module::ModuleType::All;
+use crate::android::module::{self, ModuleType::All};
 use crate::{assets, defs};
 
 /// Determine whether the provided module properties mark it as a metamodule
@@ -50,8 +50,8 @@ pub fn get_metamodule_path() -> Option<PathBuf> {
 
     // Fallback: search for metamodule=1 in modules directory
     let mut result = None;
-    let _ = crate::module::foreach_module(All, |module_path| {
-        if let Ok(props) = crate::module::read_module_prop(module_path)
+    let _ = module::foreach_module(All, |module_path| {
+        if let Ok(props) = module::read_module_prop(module_path)
             && is_metamodule(&props)
         {
             info!(
@@ -227,7 +227,7 @@ pub fn exec_metauninstall_script(module_id: &str) -> Result<()> {
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", metauninstall_path.to_str().unwrap()])
         .current_dir(metauninstall_path.parent().unwrap())
-        .envs(crate::module::get_common_script_envs())
+        .envs(module::get_common_script_envs())
         .env("MODULE_ID", module_id)
         .status()?;
 
@@ -251,7 +251,7 @@ pub fn exec_mount_script(module_dir: &str) -> Result<()> {
 
     let result = Command::new(assets::BUSYBOX_PATH)
         .args(["sh", mount_script.to_str().unwrap()])
-        .envs(crate::module::get_common_script_envs())
+        .envs(module::get_common_script_envs())
         .env("MODULE_DIR", module_dir)
         .status()?;
 
@@ -272,7 +272,7 @@ pub fn exec_stage_script(stage: &str, block: bool) -> Result<()> {
     };
 
     info!("Executing metamodule {stage}.sh");
-    crate::module::exec_script(&script_path, block)?;
+    module::exec_script(&script_path, block)?;
     info!("Metamodule {stage}.sh executed successfully");
     Ok(())
 }

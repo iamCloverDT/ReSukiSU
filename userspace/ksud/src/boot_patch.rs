@@ -24,7 +24,7 @@ mod android {
     use std::path::{Path, PathBuf};
     use std::process::{Command, Stdio};
 
-    use crate::utils;
+    use crate::android::utils;
 
     pub(super) fn ensure_gki_kernel() -> Result<()> {
         let version = get_kernel_version()?;
@@ -510,7 +510,7 @@ pub fn patch(args: BootPatchArgs) -> Result<()> {
             ..
         } = args;
 
-        println!(include_str!("banner"));
+        println!(include_str!("./android/banner"));
 
         let patch_file = image.is_some();
 
