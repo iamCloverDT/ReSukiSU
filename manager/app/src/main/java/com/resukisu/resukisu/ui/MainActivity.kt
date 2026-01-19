@@ -13,6 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
@@ -197,25 +198,21 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             defaultTransitions = object :
                                 NavHostAnimatedDestinationStyle() {
-                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                    {
-                                        slideInHorizontally(initialOffsetX = { fullWidth -> fullWidth })
-                                    }
+                                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    slideInHorizontally(initialOffsetX = { it })
+                                }
 
-                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                    {
-                                        slideOutHorizontally(targetOffsetX = { fullWidth -> -fullWidth })
-                                    }
+                                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    slideOutHorizontally(targetOffsetX = { -it / 4 }) + fadeOut()
+                                }
 
-                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition =
-                                    {
-                                        slideInHorizontally(initialOffsetX = { fullWidth -> -fullWidth })
-                                    }
+                                override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
+                                    slideInHorizontally(initialOffsetX = { -it / 4 }) + fadeIn()
+                                }
 
-                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition =
-                                    {
-                                        scaleOut(targetScale = 0.9f) + fadeOut()
-                                    }
+                                override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
+                                    scaleOut(targetScale = 0.9f) + fadeOut()
+                                }
                             }
                         )
                     }
