@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Android
@@ -228,7 +229,7 @@ private fun AppProfileInner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = MaterialTheme.shapes.medium,
+                shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                     alpha = CardConfig.cardAlpha
                 ),
@@ -293,7 +294,7 @@ private fun AppProfileInner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = MaterialTheme.shapes.medium,
+                shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                     alpha = CardConfig.cardAlpha
                 ),
@@ -333,7 +334,7 @@ private fun AppProfileInner(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                                 .padding(top = 8.dp),
-                            shape = MaterialTheme.shapes.medium,
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                                 alpha = CardConfig.cardAlpha
                             ),
@@ -368,7 +369,7 @@ private fun AppProfileInner(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .padding(horizontal = 16.dp, vertical = 8.dp),
-                                            shape = MaterialTheme.shapes.medium,
+                                            shape = RoundedCornerShape(16.dp),
                                             color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                                                 alpha = CardConfig.cardAlpha
                                             ),
@@ -404,7 +405,7 @@ private fun AppProfileInner(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp)
                                 .padding(top = 8.dp),
-                            shape = MaterialTheme.shapes.medium,
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                                 alpha = CardConfig.cardAlpha
                             ),
@@ -425,7 +426,7 @@ private fun AppProfileInner(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp)
                                     .padding(top = 8.dp),
-                                shape = MaterialTheme.shapes.medium,
+                                shape = RoundedCornerShape(16.dp),
                                 color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(
                                     alpha = CardConfig.cardAlpha
                                 ),
