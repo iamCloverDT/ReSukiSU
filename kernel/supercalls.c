@@ -33,6 +33,7 @@
 #include "syscall_hook_manager.h"
 #endif
 #include "dynamic_manager.h"
+#include "tiny_sulog.c"
 
 // Permission check functions
 bool only_manager(void)
@@ -69,6 +70,7 @@ bool allowed_for_su(void)
 static int do_grant_root(void __user *arg)
 {
     // we already check uid above on allowed_for_su()
+    write_sulog('i'); // log ioctl escalation
 
     pr_info("allow root for: %d\n", current_uid().val);
     escape_with_root_profile();
@@ -957,6 +959,15 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
         return 0;
     }
 
+    if (magic2 == GET_SULOG_DUMP_V2) {
+        int ret = send_sulog_dump(*arg);
+            if (ret)
+                return 0;
+
+        if (copy_to_user((void __user *)*arg, &reply, sizeof(reply) ))
+            return 0;
+    }
+
 #ifdef CONFIG_KSU_SUSFS
     // If magic2 is susfs and current process is root
     if (magic2 == SUSFS_MAGIC && current_uid().val == 0) {
@@ -1087,6 +1098,7 @@ void ksu_supercalls_init(void)
         pr_info("reboot kprobe registered successfully\n");
     }
 #endif
+    sulog_init_heap(); // grab heap memory
 }
 
 void ksu_supercalls_exit(void)
