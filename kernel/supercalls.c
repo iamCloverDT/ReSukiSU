@@ -821,6 +821,16 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
       .handler = do_kpm,
       .perm_check = manager_or_root },
 #endif
+#ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
+    { .cmd = KSU_IOCTL_GET_HOOK_MODE,
+      .name = "GET_HOOK_MODE",
+      .handler = do_get_hook_type,
+      .perm_check = manager_or_root },
+	{ .cmd = KSU_IOCTL_GET_VERSION_TAG,
+	  .name = "GET_VERSION_TAG",
+	  .handler = do_get_full_version,
+	  .perm_check = manager_or_root },
+#endif
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentine
 };
 
