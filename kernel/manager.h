@@ -14,6 +14,16 @@ static inline void ksu_mark_manager(u32 uid)
     ksu_last_manager_appid = uid % PER_USER_RANGE;
 }
 
+static inline uid_t ksu_get_manager_appid(void)
+{
+    return ksu_last_manager_appid;
+}
+
+static inline void ksu_set_manager_appid(uid_t appid)
+{
+    ksu_last_manager_appid = appid;
+}
+
 extern bool is_manager(void);
 bool ksu_is_manager_appid(u16 appid);
 extern bool ksu_is_manager_uid(u32 uid);
