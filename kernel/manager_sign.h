@@ -28,7 +28,7 @@
 
 // KOWX712/KernelSU
 #define EXPECTED_SIZE_KOWSU 0x375
-#define EXPECTED_HASH_KOWSU                                                  \
+#define EXPECTED_HASH_KOWSU                                                    \
     "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588"
 
 // RapliVx/KernelSU

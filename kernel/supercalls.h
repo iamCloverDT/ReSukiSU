@@ -123,11 +123,11 @@ struct ksu_enable_kpm_cmd {
 
 #ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
 struct ksu_get_hook_mode_cmd {
-	char mode[16];
+    char mode[16];
 };
 
 struct ksu_get_version_tag_cmd {
-	char tag[32];
+    char tag[32];
 };
 #endif
 
@@ -205,9 +205,10 @@ void ksu_supercalls_exit(void);
 // extensions
 #define CHANGE_MANAGER_UID 10006
 #define KSU_TOOLKIT_SIGNATURE_INDEX 254
-#define KSU_UMOUNT_GETSIZE 107   // get list size // shit is u8 we cant fit 10k+ on it
-#define KSU_UMOUNT_GETLIST 108   // get list
-#define GET_SULOG_DUMP 10009     // get sulog dump, max, last 100 escalations
-#define GET_SULOG_DUMP_V2 10010     // get sulog dump, max, last 250 escalations
+#define KSU_UMOUNT_GETSIZE                                                     \
+    107 // get list size // shit is u8 we cant fit 10k+ on it
+#define KSU_UMOUNT_GETLIST 108 // get list
+#define GET_SULOG_DUMP 10009 // get sulog dump, max, last 100 escalations
+#define GET_SULOG_DUMP_V2 10010 // get sulog dump, max, last 250 escalations
 
 #endif // __KSU_H_SUPERCALLS

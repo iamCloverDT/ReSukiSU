@@ -613,24 +613,26 @@ static int add_try_umount(void __user *arg)
         // check for pointer first
         if (!cmd.arg)
             return -EFAULT;
-        
+
         size_t total_size = 0; // size of list in bytes
 
         down_read(&mount_list_lock);
-        list_for_each_entry(entry, &mount_list, list) {
-            total_size = total_size + strlen(entry->umountable) + 1; // + 1 for \0
+        list_for_each_entry (entry, &mount_list, list) {
+            total_size =
+                total_size + strlen(entry->umountable) + 1; // + 1 for \0
         }
         up_read(&mount_list_lock);
 
         // debug
         // pr_info("cmd_add_try_umount: total_size: %zu\n", total_size);
-            
-        if (copy_to_user((size_t __user *)cmd.arg, &total_size, sizeof(total_size)))
+
+        if (copy_to_user((size_t __user *)cmd.arg, &total_size,
+                         sizeof(total_size)))
             return -EFAULT;
 
         return 0;
     }
-        
+
     // WARNING! this is straight up pointerwalking.
     // this way we dont need to redefine the ioctl defs.
     // this also avoids us needing to kmalloc
@@ -639,16 +641,16 @@ static int add_try_umount(void __user *arg)
         // check for pointer first
         if (!cmd.arg)
             return -EFAULT;
-            
+
         char *user_buf = (char *)cmd.arg;
 
         down_read(&mount_list_lock);
-        list_for_each_entry(entry, &mount_list, list) {
-
+        list_for_each_entry (entry, &mount_list, list) {
             //debug
             //pr_info("cmd_add_try_umount: entry: %s\n", entry->umountable);
-            
-            if (copy_to_user((char __user *)user_buf, entry->umountable, strlen(entry->umountable) + 1 )) {
+
+            if (copy_to_user((char __user *)user_buf, entry->umountable,
+                             strlen(entry->umountable) + 1)) {
                 up_read(&mount_list_lock);
                 return -EFAULT;
             }
@@ -926,10 +928,10 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
       .name = "GET_HOOK_MODE",
       .handler = do_get_hook_mode,
       .perm_check = manager_or_root },
-	{ .cmd = KSU_IOCTL_GET_VERSION_TAG,
-	  .name = "GET_VERSION_TAG",
-	  .handler = do_get_version_tag,
-	  .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_GET_VERSION_TAG,
+      .name = "GET_VERSION_TAG",
+      .handler = do_get_version_tag,
+      .perm_check = manager_or_root },
 #endif
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentine
 };
@@ -993,7 +995,8 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
         if (current_uid().val != 0)
             return 0;
 
-        pr_info("sys_reboot: register toolkit: appid=%u sig=%u\n", cmd, KSU_TOOLKIT_SIGNATURE_INDEX);
+        pr_info("sys_reboot: register toolkit: appid=%u sig=%u\n", cmd,
+                KSU_TOOLKIT_SIGNATURE_INDEX);
         ksu_unregister_manager_by_signature_index(KSU_TOOLKIT_SIGNATURE_INDEX);
         ksu_register_manager(cmd, KSU_TOOLKIT_SIGNATURE_INDEX);
 
@@ -1005,10 +1008,10 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 
     if (magic2 == GET_SULOG_DUMP_V2) {
         int ret = send_sulog_dump(*arg);
-            if (ret)
-                return 0;
+        if (ret)
+            return 0;
 
-        if (copy_to_user((void __user *)*arg, &reply, sizeof(reply) ))
+        if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
             return 0;
     }
 

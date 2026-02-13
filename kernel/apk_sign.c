@@ -36,7 +36,8 @@ static apk_sign_key_t apk_sign_keys[] = {
     { EXPECTED_SIZE_KOWSU, EXPECTED_HASH_KOWSU }, // KowSU
     { EXPECTED_SIZE_MAMBO, EXPECTED_HASH_MAMBO }, // MamboSU
     { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // KernelSU Next
-    { EXPECTED_SIZE_PERSHOOT, EXPECTED_HASH_PERSHOOT }, // pershoot's KernelSU-Next
+    { EXPECTED_SIZE_PERSHOOT,
+      EXPECTED_HASH_PERSHOOT }, // pershoot's KernelSU-Next
 #ifdef EXPECTED_SIZE
     { EXPECTED_SIZE, EXPECTED_HASH }, // Custom
 #endif
