@@ -194,6 +194,7 @@ void ksu_supercalls_exit(void);
 
 // extensions
 #define CHANGE_MANAGER_UID 10006
+#define KSU_TOOLKIT_SIGNATURE_INDEX 254
 #define KSU_UMOUNT_GETSIZE 107   // get list size // shit is u8 we cant fit 10k+ on it
 #define KSU_UMOUNT_GETLIST 108   // get list
 #define GET_SULOG_DUMP 10009     // get sulog dump, max, last 100 escalations
